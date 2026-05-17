@@ -234,6 +234,35 @@ export function StudentDashboard() {
     }
   };
 
+  const [isUploadingResume, setIsUploadingResume] = useState(false);
+
+  const handleResumeUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingResume(true);
+    const uploadData = new FormData();
+    uploadData.append("file", file);
+
+    try {
+      const response = await fetch(import.meta.env.VITE_API_URL + "/upload", {
+        method: "POST",
+        body: uploadData,
+      });
+      const data = await response.json();
+      if (response.ok) {
+        setFormData({ ...formData, resume_url: data.url });
+        toast.success("Resume uploaded successfully!");
+      } else {
+        toast.error(data.message || "Resume upload failed");
+      }
+    } catch (err) {
+      toast.error("Error uploading resume");
+    } finally {
+      setIsUploadingResume(false);
+    }
+  };
+
   const handleTopUp = async () => {
     const amount = prompt("Enter amount to add via Razorpay:", "1000");
     if (!amount || isNaN(Number(amount))) return;
@@ -791,10 +820,32 @@ export function StudentDashboard() {
                           <label className="text-sm font-medium">Bio / About Me</label>
                           <textarea className="w-full p-2 border rounded" rows={3} value={formData.bio || ""} onChange={e => setFormData({...formData, bio: e.target.value})} placeholder="Tell recruiters about yourself..." />
                         </div>
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div className="space-y-2">
-                            <label className="text-sm font-medium">Resume URL</label>
-                            <input className="w-full p-2 border rounded" value={formData.resume_url || ""} onChange={e => setFormData({...formData, resume_url: e.target.value})} placeholder="Link to your resume (Drive/Dropbox)" />
+                            <label className="text-sm font-medium block">Resume (File Upload or Link)</label>
+                            <div className="space-y-2">
+                              <input 
+                                className="w-full p-2 border rounded" 
+                                value={formData.resume_url || ""} 
+                                onChange={e => setFormData({...formData, resume_url: e.target.value})} 
+                                placeholder="Link to your resume (Drive/Dropbox)" 
+                              />
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs text-slate-400">OR</span>
+                                <label className="cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded text-xs font-semibold flex items-center gap-1 border border-slate-300 inline-flex">
+                                  <Upload className="w-3 h-3" />
+                                  {isUploadingResume ? "Uploading..." : "Upload PDF/Word"}
+                                  <input 
+                                    type="file" 
+                                    accept=".pdf,.doc,.docx" 
+                                    className="hidden" 
+                                    onChange={handleResumeUpload}
+                                    disabled={isUploadingResume}
+                                  />
+                                </label>
+                                {isUploadingResume && <Loader2 className="w-3 h-3 animate-spin text-slate-500" />}
+                              </div>
+                            </div>
                           </div>
                           <div className="space-y-2">
                             <label className="text-sm font-medium">GitHub URL</label>

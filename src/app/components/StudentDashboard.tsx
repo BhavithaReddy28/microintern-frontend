@@ -268,7 +268,11 @@ export function StudentDashboard() {
     if (!amount || isNaN(Number(amount))) return;
     
     try {
-      // 1. Create order
+      // 1. Fetch dynamic config and Create order
+      const configRes = await fetch(import.meta.env.VITE_API_URL + "/payment/config");
+      const configData = await configRes.json();
+      const rzpKey = configData.razorpay_key_id;
+
       const orderRes = await fetch(import.meta.env.VITE_API_URL + "/payment/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -279,7 +283,7 @@ export function StudentDashboard() {
 
       // 2. Open Razorpay
       const options = {
-        key: "rzp_test_SmKrPvIIVOi39k",
+        key: rzpKey,
         amount: orderData.amount,
         currency: "INR",
         name: "MicroIntern Marketplace",

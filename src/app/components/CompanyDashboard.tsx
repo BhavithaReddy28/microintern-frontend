@@ -920,7 +920,7 @@ export function CompanyDashboard() {
                         <div>
                           <div className="flex items-center gap-2">
                             <h3 className="font-bold text-lg">{student.first_name} {student.last_name}</h3>
-                            {student.hireable && (
+                            {Number(student.rating) >= 3.5 && (
                               <Badge className="bg-green-100 text-green-700 hover:bg-green-100 border-none">🔥 Top Talent</Badge>
                             )}
                           </div>
@@ -950,12 +950,14 @@ export function CompanyDashboard() {
                             ))}
                           </div>
                         </div>
-                        <Button 
-                          onClick={() => handleInviteStudent(student.student_id)}
-                          className="bg-indigo-600 hover:bg-indigo-700"
-                        >
-                          Invite to Interview
-                        </Button>
+                        {Number(student.rating) >= 3.5 && (
+                          <Button 
+                            onClick={() => handleInviteStudent(student.student_id)}
+                            className="bg-indigo-600 hover:bg-indigo-700"
+                          >
+                            Invite to Interview
+                          </Button>
+                        )}
                       </div>
                     </div>
                   ))}

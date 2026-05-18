@@ -36,6 +36,7 @@ export function AdminDashboard() {
 
   const [pendingStudents, setPendingStudents] = useState<any[]>([]);
   const [withdrawalRequests, setWithdrawalRequests] = useState<any[]>([]);
+  const [transactions, setTransactions] = useState<any[]>([]);
   const [isProcessingPayout, setIsProcessingPayout] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState<"stats" | "verifications" | "withdrawals">("stats");
   const [rejectionReason, setRejectionReason] = useState("");
@@ -45,7 +46,18 @@ export function AdminDashboard() {
     fetchAdminStats();
     fetchPendingVerifications();
     fetchWithdrawalRequests();
+    fetchAdminTransactions();
   }, []);
+
+  const fetchAdminTransactions = async () => {
+    try {
+      const response = await fetch(import.meta.env.VITE_API_URL + "/admin/transactions");
+      const data = await response.json();
+      setTransactions(data);
+    } catch (err) {
+      console.error("Failed to load transactions", err);
+    }
+  };
 
   const fetchWithdrawalRequests = async () => {
     try {
@@ -321,13 +333,12 @@ export function AdminDashboard() {
                   <span className="text-slate-600">Revenue Growth</span>
                   <Badge className="bg-green-100 text-green-700 border-none">+12.5% this week</Badge>
                 </div>
-                <Button 
-                  className="w-full bg-indigo-600 hover:bg-indigo-700 mt-4" 
-                  onClick={() => handleAdminWithdraw("revenue", stats?.total_fees)}
-                  disabled={isWithdrawing}
-                >
-                  Withdraw Platform Fees
-                </Button>
+                <div className="pt-2">
+                  <div className="w-full bg-emerald-50 border border-emerald-200 text-emerald-700 p-3 rounded-xl flex items-center justify-center gap-2 font-semibold text-sm shadow-sm">
+                    <CheckCircle className="w-4 h-4 text-emerald-600" />
+                    Available in Admin Main Bank Account
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -358,14 +369,12 @@ export function AdminDashboard() {
                   <span className="text-slate-600">Next Tax Filing</span>
                   <span className="font-bold text-slate-900">June 1st, 2026</span>
                 </div>
-                <Button 
-                  variant="outline" 
-                  className="w-full border-blue-600 text-blue-600 hover:bg-blue-50 mt-4"
-                  onClick={() => handleAdminWithdraw("gst", stats?.total_gst)}
-                  disabled={isWithdrawing}
-                >
-                  Withdraw GST Collection
-                </Button>
+                <div className="pt-2">
+                  <div className="w-full bg-blue-50 border border-blue-200 text-blue-700 p-3 rounded-xl flex items-center justify-center gap-2 font-semibold text-sm shadow-sm">
+                    <CheckCircle className="w-4 h-4 text-blue-600" />
+                    Reserved for Government Tax Filing
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -380,27 +389,31 @@ export function AdminDashboard() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 font-bold">W</div>
-                  <div>
-                    <p className="font-bold text-slate-900">Wipro posted a new task</p>
-                    <p className="text-xs text-slate-500">2 minutes ago</p>
+            <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
+              {transactions.length === 0 ? (
+                <div className="text-center py-8 text-slate-500">No marketplace activity yet</div>
+              ) : (
+                transactions.map((tx) => (
+                  <div key={tx.transaction_id} className="flex items-center justify-between p-4 bg-slate-50 rounded-xl hover:bg-slate-100 transition-colors">
+                    <div className="flex items-center gap-4">
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${
+                        tx.type === 'credit' ? 'bg-green-100 text-green-600' : 'bg-indigo-100 text-indigo-600'
+                      }`}>
+                        {tx.display_name ? tx.display_name.charAt(0).toUpperCase() : 'U'}
+                      </div>
+                      <div>
+                        <p className="font-bold text-slate-900">{tx.description || `${tx.type === 'credit' ? 'Deposit' : 'Payment'} by ${tx.display_name}`}</p>
+                        <p className="text-xs text-slate-500">
+                          {new Date(tx.created_at).toLocaleDateString()} {new Date(tx.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </p>
+                      </div>
+                    </div>
+                    <Badge variant="outline" className={tx.type === 'credit' ? 'text-green-600 border-green-200 bg-green-50/50' : 'text-indigo-600 border-indigo-200 bg-indigo-50/50'}>
+                      ₹{tx.amount.toFixed(2)} {tx.type === 'credit' ? 'Deposited' : 'Locked/Paid'}
+                    </Badge>
                   </div>
-                </div>
-                <Badge variant="outline">₹2500 Locked</Badge>
-              </div>
-              <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center text-green-600 font-bold">S</div>
-                  <div>
-                    <p className="font-bold text-slate-900">Student #101 was paid</p>
-                    <p className="text-xs text-slate-500">1 hour ago</p>
-                  </div>
-                </div>
-                <Badge variant="outline" className="text-green-600">₹475 Released</Badge>
-              </div>
+                ))
+              )}
             </div>
           </CardContent>
         </Card>

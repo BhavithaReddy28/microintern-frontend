@@ -161,11 +161,11 @@ export function SignUp() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 text-slate-900 dark:text-slate-50">
       {/* Header */}
-      <div className="border-b bg-white/80 backdrop-blur-sm">
+      <div className="border-b bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm dark:border-slate-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <Link to="/" className="text-2xl font-bold text-blue-600">
+          <Link to="/" className="text-2xl font-bold text-blue-600 dark:text-blue-400">
             MicroIntern
           </Link>
         </div>
@@ -175,12 +175,12 @@ export function SignUp() {
       <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold mb-2">Create Your Account</h1>
-          <p className="text-slate-600">
+          <p className="text-slate-600 dark:text-slate-400">
             Join thousands of students and companies on MicroIntern
           </p>
         </div>
 
-        <Card className="border-2 shadow-lg">
+        <Card className="border-2 shadow-lg dark:border-slate-800 dark:bg-slate-900/90 backdrop-blur-sm">
           <CardHeader>
             <CardTitle className="text-center">Sign Up</CardTitle>
           </CardHeader>
@@ -606,22 +606,22 @@ export function SignUp() {
 
             <div className="relative my-6">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-slate-300"></div>
+                <div className="w-full border-t border-slate-300 dark:border-slate-800"></div>
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="bg-white px-4 text-slate-500">
+                <span className="bg-white dark:bg-slate-900 px-4 text-slate-500 dark:text-slate-400">
                   Already have an account?
                 </span>
               </div>
             </div>
 
-            <Button variant="outline" className="w-full" asChild>
+            <Button variant="outline" className="w-full dark:border-slate-700 dark:hover:bg-slate-800" asChild>
               <Link to="/signin">Sign In</Link>
             </Button>
           </CardContent>
         </Card>
 
-        <p className="text-center text-xs text-slate-500 mt-6">
+        <p className="text-center text-xs text-slate-500 dark:text-slate-400 mt-6">
           By creating an account, you acknowledge that MicroIntern is a marketplace
           platform and agree to our 5% commission model on all transactions.
         </p>

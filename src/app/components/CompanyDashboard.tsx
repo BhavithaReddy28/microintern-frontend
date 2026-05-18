@@ -381,9 +381,9 @@ export function CompanyDashboard() {
   const totalBudget = baseBudget + platformFee + gstAmount;
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-blue-50 dark:bg-slate-950">
       {/* Header */}
-      <div className="bg-gradient-to-r from-green-600 to-emerald-700 text-white">
+      <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex items-center justify-between">
             <div>
@@ -951,12 +951,24 @@ export function CompanyDashboard() {
                             )}
                           </div>
                           <p className="text-sm text-slate-500">{student.university} • {student.major}</p>
-                          <div className="flex items-center gap-4 mt-1">
-                            <div className="flex items-center text-amber-500">
+                          <div className="flex items-center gap-4 mt-2 flex-wrap">
+                            <div className="flex items-center text-amber-500 bg-amber-50 dark:bg-amber-950/50 px-2 py-1 rounded border border-amber-200 dark:border-amber-900">
                               <Star className="w-4 h-4 fill-current" />
                               <span className="ml-1 text-sm font-bold">{student.rating}</span>
                             </div>
                             <Badge variant="outline" className="text-xs">{student.level || "Beginner"}</Badge>
+                            <div className="flex items-center gap-2 bg-white dark:bg-slate-800 px-3 py-1 rounded border border-slate-200 dark:border-slate-700 text-xs shadow-sm">
+                              <span className="text-slate-500 font-semibold">Completed Tasks:</span>
+                              <span className="text-green-600 font-bold bg-green-50 dark:bg-green-950/50 px-1.5 py-0.5 rounded border border-green-200 dark:border-green-900">
+                                {student.easy_tasks_count || 0} Easy
+                              </span>
+                              <span className="text-blue-600 font-bold bg-blue-50 dark:bg-blue-950/50 px-1.5 py-0.5 rounded border border-blue-200 dark:border-blue-900">
+                                {student.medium_tasks_count || 0} Medium
+                              </span>
+                              <span className="text-purple-600 font-bold bg-purple-50 dark:bg-purple-950/50 px-1.5 py-0.5 rounded border border-purple-200 dark:border-purple-900">
+                                {student.hard_tasks_count || 0} Hard
+                              </span>
+                            </div>
                           </div>
                         </div>
                       </div>

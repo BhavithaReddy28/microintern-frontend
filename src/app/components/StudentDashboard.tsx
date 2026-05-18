@@ -29,12 +29,7 @@ import {
 import { useRef } from "react";
 import { useAuth } from "./AuthContext";
 import { toast } from "sonner";
-
-declare global {
-  interface Window {
-    Razorpay: any;
-  }
-}
+import { PaymentGatewayModal } from "./PaymentGatewayModal";
 
 export function StudentDashboard() {
   const { user } = useAuth();
@@ -59,6 +54,8 @@ export function StudentDashboard() {
   const [availableTasksCount, setAvailableTasksCount] = useState(0);
   const [availableTasks, setAvailableTasks] = useState<any[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [paymentAmount, setPaymentAmount] = useState(0);
   const notificationRef = useRef<HTMLDivElement>(null);
   
   useEffect(() => {
@@ -264,66 +261,10 @@ export function StudentDashboard() {
   };
 
   const handleTopUp = async () => {
-    const amount = prompt("Enter amount to add via Razorpay:", "1000");
-    if (!amount || isNaN(Number(amount))) return;
-    
-    try {
-      // 1. Fetch dynamic config and Create order
-      const configRes = await fetch(import.meta.env.VITE_API_URL + "/payment/config");
-      const configData = await configRes.json();
-      const rzpKey = configData.razorpay_key_id;
-
-      const orderRes = await fetch(import.meta.env.VITE_API_URL + "/payment/create-order", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount: Number(amount) }),
-      });
-      const orderData = await orderRes.json();
-      if (!orderRes.ok) throw new Error(orderData.message);
-
-      // 2. Open Razorpay
-      const options = {
-        key: rzpKey,
-        amount: orderData.amount,
-        currency: "INR",
-        name: "MicroIntern Marketplace",
-        description: "Student Wallet Top-up",
-        order_id: orderData.id,
-        handler: async function (response: any) {
-          // 3. Verify
-          const verifyRes = await fetch(import.meta.env.VITE_API_URL + "/payment/verify", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_signature: response.razorpay_signature,
-              user_id: user?.user_id,
-              amount: Number(amount)
-            }),
-          });
-
-          if (verifyRes.ok) {
-            toast.success(`₹${amount} added successfully!`);
-            fetchWalletData();
-          } else {
-            toast.error("Payment verification failed");
-          }
-        },
-        prefill: {
-          email: user?.email,
-        },
-        theme: {
-          color: "#4F46E5",
-        },
-      };
-
-      const rzp = new window.Razorpay(options);
-      rzp.open();
-
-    } catch (err: any) {
-      toast.error("Payment failed: " + err.message);
-    }
+    const amount = prompt("Enter amount to top up (Real Gateway):", "1000");
+    if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) return;
+    setPaymentAmount(Number(amount));
+    setIsPaymentModalOpen(true);
   };
 
   const handleWithdrawSubmit = async (e: React.FormEvent) => {
@@ -1088,6 +1029,19 @@ export function StudentDashboard() {
               </CardContent>
             </Card>
           </div>
+        )}
+
+        {isPaymentModalOpen && (
+          <PaymentGatewayModal
+            isOpen={isPaymentModalOpen}
+            onClose={() => setIsPaymentModalOpen(false)}
+            amount={paymentAmount}
+            userId={Number(user?.user_id)}
+            onSuccess={(addedAmount) => {
+              toast.success(`₹${addedAmount} added successfully!`);
+              fetchWalletData();
+            }}
+          />
         )}
       </div>
     </div>

@@ -19,7 +19,7 @@ export const PaymentGatewayModal: React.FC<PaymentGatewayModalProps> = ({
   const [activeTab, setActiveTab] = useState<"upi" | "card" | "netbanking">("upi");
   const [paymentState, setPaymentState] = useState<"idle" | "processing" | "success" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState("");
-  const [upiId] = useState("vvsbhavithareddy@okaxis"); // Default configurable UPI ID
+  const [upiId] = useState("7416596168@ibl"); // Default configurable UPI ID
 
   // Card form state
   const [cardNumber, setCardNumber] = useState("");
@@ -87,7 +87,7 @@ export const PaymentGatewayModal: React.FC<PaymentGatewayModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
       <div className="relative w-full max-w-lg overflow-hidden bg-white rounded-2xl shadow-2xl border border-slate-100 flex flex-col md:flex-row min-h-[500px]">
-        
+
         {/* Left Sidebar Info Area */}
         <div className="w-full md:w-2/5 bg-gradient-to-br from-slate-900 to-slate-800 p-6 text-white flex flex-col justify-between">
           <div>
@@ -112,10 +112,10 @@ export const PaymentGatewayModal: React.FC<PaymentGatewayModalProps> = ({
 
         {/* Right Action & Checkout tab Area */}
         <div className="w-full md:w-3/5 p-6 flex flex-col justify-between relative bg-slate-50/50">
-          
+
           {/* Close button */}
-          <button 
-            onClick={onClose} 
+          <button
+            onClick={onClose}
             className="absolute top-4 right-4 p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition-all"
           >
             <X className="w-5 h-5" />
@@ -127,27 +127,24 @@ export const PaymentGatewayModal: React.FC<PaymentGatewayModalProps> = ({
               <div className="flex border-b border-slate-200 mb-6">
                 <button
                   onClick={() => setActiveTab("upi")}
-                  className={`flex-1 pb-3 text-[10px] font-bold uppercase tracking-wider flex flex-col items-center gap-1 transition-all ${
-                    activeTab === "upi" ? "text-indigo-600 border-b-2 border-indigo-600" : "text-slate-400 hover:text-slate-600"
-                  }`}
+                  className={`flex-1 pb-3 text-[10px] font-bold uppercase tracking-wider flex flex-col items-center gap-1 transition-all ${activeTab === "upi" ? "text-indigo-600 border-b-2 border-indigo-600" : "text-slate-400 hover:text-slate-600"
+                    }`}
                 >
                   <QrCode className="w-5 h-5" />
                   UPI / QR
                 </button>
                 <button
                   onClick={() => setActiveTab("card")}
-                  className={`flex-1 pb-3 text-[10px] font-bold uppercase tracking-wider flex flex-col items-center gap-1 transition-all ${
-                    activeTab === "card" ? "text-indigo-600 border-b-2 border-indigo-600" : "text-slate-400 hover:text-slate-600"
-                  }`}
+                  className={`flex-1 pb-3 text-[10px] font-bold uppercase tracking-wider flex flex-col items-center gap-1 transition-all ${activeTab === "card" ? "text-indigo-600 border-b-2 border-indigo-600" : "text-slate-400 hover:text-slate-600"
+                    }`}
                 >
                   <CreditCard className="w-5 h-5" />
                   Card
                 </button>
                 <button
                   onClick={() => setActiveTab("netbanking")}
-                  className={`flex-1 pb-3 text-[10px] font-bold uppercase tracking-wider flex flex-col items-center gap-1 transition-all ${
-                    activeTab === "netbanking" ? "text-indigo-600 border-b-2 border-indigo-600" : "text-slate-400 hover:text-slate-600"
-                  }`}
+                  className={`flex-1 pb-3 text-[10px] font-bold uppercase tracking-wider flex flex-col items-center gap-1 transition-all ${activeTab === "netbanking" ? "text-indigo-600 border-b-2 border-indigo-600" : "text-slate-400 hover:text-slate-600"
+                    }`}
                 >
                   <Building className="w-5 h-5" />
                   Net Banking
@@ -156,15 +153,15 @@ export const PaymentGatewayModal: React.FC<PaymentGatewayModalProps> = ({
 
               {/* Tabs Content */}
               <div className="flex-1 overflow-y-auto max-h-[340px] pr-1">
-                
+
                 {/* 1. UPI Tab */}
                 {activeTab === "upi" && (
                   <div className="flex flex-col items-center text-center space-y-4">
                     <p className="text-[11px] font-semibold text-slate-500">Scan this QR code with any UPI app (GPay, PhonePe, Paytm, etc.) to complete transaction.</p>
                     <div className="p-3 bg-white border border-slate-100 rounded-xl shadow-md">
-                      <img 
-                        src={qrCodeUrl} 
-                        alt="UPI QR Code" 
+                      <img
+                        src={qrCodeUrl}
+                        alt="UPI QR Code"
                         className="w-[180px] h-[180px] object-contain"
                       />
                     </div>
@@ -206,10 +203,10 @@ export const PaymentGatewayModal: React.FC<PaymentGatewayModalProps> = ({
                     </div>
 
                     <div className="space-y-3">
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         maxLength={19}
-                        placeholder="Card Number" 
+                        placeholder="Card Number"
                         value={cardNumber}
                         onChange={(e) => {
                           const val = e.target.value.replace(/\D/g, "").replace(/(.{4})/g, "$1 ").trim();
@@ -217,17 +214,17 @@ export const PaymentGatewayModal: React.FC<PaymentGatewayModalProps> = ({
                         }}
                         className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 font-mono transition-all"
                       />
-                      <input 
-                        type="text" 
-                        placeholder="Cardholder Name" 
+                      <input
+                        type="text"
+                        placeholder="Cardholder Name"
                         value={cardName}
                         onChange={(e) => setCardName(e.target.value)}
                         className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
                       />
                       <div className="flex gap-3">
-                        <input 
-                          type="text" 
-                          placeholder="MM/YY" 
+                        <input
+                          type="text"
+                          placeholder="MM/YY"
                           maxLength={5}
                           value={cardExpiry}
                           onChange={(e) => {
@@ -237,9 +234,9 @@ export const PaymentGatewayModal: React.FC<PaymentGatewayModalProps> = ({
                           }}
                           className="w-1/2 px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 font-mono transition-all"
                         />
-                        <input 
-                          type="password" 
-                          placeholder="CVV" 
+                        <input
+                          type="password"
+                          placeholder="CVV"
                           maxLength={3}
                           value={cardCvv}
                           onChange={(e) => setCardCvv(e.target.value.replace(/\D/g, ""))}
@@ -274,11 +271,10 @@ export const PaymentGatewayModal: React.FC<PaymentGatewayModalProps> = ({
                         <button
                           key={bank.id}
                           onClick={() => setSelectedBank(bank.id)}
-                          className={`p-3 border rounded-xl flex items-center justify-center font-bold text-[10px] uppercase tracking-wider transition-all ${
-                            selectedBank === bank.id 
-                              ? "bg-indigo-50 border-indigo-500 text-indigo-600" 
+                          className={`p-3 border rounded-xl flex items-center justify-center font-bold text-[10px] uppercase tracking-wider transition-all ${selectedBank === bank.id
+                              ? "bg-indigo-50 border-indigo-500 text-indigo-600"
                               : "bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50/50"
-                          }`}
+                            }`}
                         >
                           {bank.short}
                         </button>
@@ -332,7 +328,7 @@ export const PaymentGatewayModal: React.FC<PaymentGatewayModalProps> = ({
                 <h3 className="font-bold text-base text-slate-800">Payment Failed</h3>
                 <p className="text-[11px] text-red-500">{errorMessage}</p>
               </div>
-              <button 
+              <button
                 onClick={() => setPaymentState("idle")}
                 className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-[11px] font-bold transition-all"
               >

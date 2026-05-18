@@ -222,7 +222,7 @@ export function AdminDashboard() {
           </div>
         </div>
 
-        {activeTab === "stats" ? (
+        {activeTab === "stats" && (
           <>
 
         {/* Global Stats Grid */}

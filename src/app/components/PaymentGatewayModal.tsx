@@ -38,15 +38,7 @@ export const PaymentGatewayModal: React.FC<PaymentGatewayModalProps> = ({
     setTimeLeft(300);
     setPaymentState("idle");
     setErrorMessage("");
-
-    // MOCK WEBHOOK: Automatically detect payment after 6 seconds for a seamless demo experience.
-    if (activeTab === "upi" && paymentState === "idle") {
-      const timer = setTimeout(() => {
-        handlePaymentSubmit("UPI QR Code (Auto-Detected)");
-      }, 6000);
-      return () => clearTimeout(timer);
-    }
-  }, [isOpen, activeTab, paymentState]);
+  }, [isOpen]);
 
   useEffect(() => {
     if (!isOpen || timeLeft <= 0 || paymentState !== "idle") return;
@@ -178,10 +170,12 @@ export const PaymentGatewayModal: React.FC<PaymentGatewayModalProps> = ({
                       <span className="font-mono text-red-500 bg-red-50 px-2 py-0.5 rounded font-bold">Expires: {formatTime(timeLeft)}</span>
                     </div>
 
-                    <div className="w-full mt-4 flex items-center justify-center gap-2 text-xs font-bold text-indigo-600 bg-indigo-50 py-3 rounded-xl border border-indigo-100 animate-pulse">
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Listening for successful payment...
-                    </div>
+                    <button
+                      onClick={() => handlePaymentSubmit("UPI QR Code")}
+                      className="w-full py-3 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-xl font-bold text-xs shadow-lg hover:shadow-xl hover:from-indigo-700 hover:to-violet-700 transition-all flex items-center justify-center gap-2"
+                    >
+                      I have completed the payment
+                    </button>
                   </div>
                 )}
 

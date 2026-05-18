@@ -644,8 +644,12 @@ export function AdminDashboard() {
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
             <Card className="max-w-md w-full shadow-2xl border-none">
               <CardHeader className="bg-indigo-900 text-white rounded-t-xl">
-                <CardTitle>Withdraw {withdrawType.toUpperCase()} Earnings</CardTitle>
-                <CardDescription className="text-indigo-100">Transfer funds to your business bank account</CardDescription>
+                <CardTitle>{withdrawType === "revenue" ? "Internal Transfer: Platform Revenue" : "Tax Compliance: Allocate GST Funds"}</CardTitle>
+                <CardDescription className="text-indigo-100">
+                  {withdrawType === "revenue" 
+                    ? "Transfer accumulated commission profits from Escrow Holding Ledger to Admin Main Business Bank Account." 
+                    : "Allocate collected GST tax funds from Escrow Holding Ledger for Government Tax Compliance Filing."}
+                </CardDescription>
               </CardHeader>
               <CardContent className="p-6">
                 <form onSubmit={handleWithdrawSubmit} className="space-y-4">

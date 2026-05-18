@@ -51,27 +51,33 @@ export function SignUp() {
     if (!file) return;
 
     setIsUploading(true);
-    try {
-      // Validate file size is under 1.5MB to maintain fast database requests
-      if (file.size > 1500 * 1024) {
-        setError("Image size should be less than 1.5MB");
-        setIsUploading(false);
-        return;
-      }
+    setError("");
 
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setStudentData({ ...studentData, id_card_url: reader.result as string });
-        setIsUploading(false);
-      };
-      reader.onerror = () => {
-        setError("Failed to read image file");
-        setIsUploading(false);
-      };
-      reader.readAsDataURL(file);
+    // Validate file size is under 5MB
+    if (file.size > 5000 * 1024) {
+      setError("Image size should be less than 5MB");
+      setIsUploading(false);
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const response = await fetch(import.meta.env.VITE_API_URL + "/upload", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await response.json();
+      if (response.ok) {
+        setStudentData({ ...studentData, id_card_url: data.url });
+      } else {
+        setError(data.message || "Upload failed. Please try again.");
+      }
     } catch (err) {
       console.error("Upload failed", err);
-      setError("Error processing ID card image");
+      setError("Error uploading ID card image to server.");
+    } finally {
       setIsUploading(false);
     }
   };

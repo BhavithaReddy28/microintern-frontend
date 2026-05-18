@@ -653,11 +653,8 @@ export function StudentDashboard() {
                 <CardContent>
                   <div className="text-4xl font-bold mb-4">₹{walletBalance.toFixed(2)}</div>
                   <div className="flex gap-2">
-                    <Button className="flex-1 bg-white text-indigo-600 hover:bg-slate-100 border-none" onClick={handleTopUp}>
-                      Add Funds
-                    </Button>
-                    <Button variant="outline" className="flex-1 border-white text-white bg-transparent hover:bg-white/10" onClick={handleWithdrawClick}>
-                      Withdraw
+                    <Button variant="outline" className="w-full border-white text-white bg-transparent hover:bg-white/10 font-semibold" onClick={handleWithdrawClick}>
+                      Withdraw Earnings
                     </Button>
                   </div>
                 </CardContent>

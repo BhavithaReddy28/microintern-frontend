@@ -33,14 +33,47 @@ export function AdminDashboard() {
   });
 
   const [pendingStudents, setPendingStudents] = useState<any[]>([]);
-  const [activeTab, setActiveTab] = useState<"stats" | "verifications">("stats");
+  const [withdrawalRequests, setWithdrawalRequests] = useState<any[]>([]);
+  const [isProcessingPayout, setIsProcessingPayout] = useState<number | null>(null);
+  const [activeTab, setActiveTab] = useState<"stats" | "verifications" | "withdrawals">("stats");
   const [rejectionReason, setRejectionReason] = useState("");
   const [verifyingId, setVerifyingId] = useState<number | null>(null);
 
   useEffect(() => {
     fetchAdminStats();
     fetchPendingVerifications();
+    fetchWithdrawalRequests();
   }, []);
+
+  const fetchWithdrawalRequests = async () => {
+    try {
+      const response = await fetch(import.meta.env.VITE_API_URL + "/admin/withdrawal-requests");
+      const data = await response.json();
+      setWithdrawalRequests(data);
+    } catch (err) {
+      console.error("Failed to load withdrawal requests", err);
+    }
+  };
+
+  const handleApprovePayout = async (id: number) => {
+    setIsProcessingPayout(id);
+    try {
+      const response = await fetch(import.meta.env.VITE_API_URL + `/admin/withdrawal-requests/${id}/approve`, {
+        method: "POST"
+      });
+      if (response.ok) {
+        toast.success("Payout marked as completed successfully!");
+        fetchWithdrawalRequests();
+        fetchAdminStats();
+      } else {
+        toast.error("Failed to approve payout request.");
+      }
+    } catch (err) {
+      toast.error("Failed to approve payout request.");
+    } finally {
+      setIsProcessingPayout(null);
+    }
+  };
 
   const fetchPendingVerifications = async () => {
     try {
@@ -171,7 +204,19 @@ export function AdminDashboard() {
                 </Badge>
               )}
             </Button>
-            <Button onClick={() => { fetchAdminStats(); fetchPendingVerifications(); }} variant="ghost">
+            <Button 
+              variant={activeTab === "withdrawals" ? "default" : "outline"}
+              onClick={() => setActiveTab("withdrawals")}
+              className={activeTab === "withdrawals" ? "bg-indigo-600 flex gap-2" : "flex gap-2"}
+            >
+              Withdrawals
+              {withdrawalRequests.length > 0 && (
+                <Badge className="bg-amber-500 text-white border-none h-5 w-5 p-0 flex items-center justify-center">
+                  {withdrawalRequests.length}
+                </Badge>
+              )}
+            </Button>
+            <Button onClick={() => { fetchAdminStats(); fetchPendingVerifications(); fetchWithdrawalRequests(); }} variant="ghost">
               Refresh
             </Button>
           </div>
@@ -457,6 +502,131 @@ export function AdminDashboard() {
                           </div>
                         </div>
                       </div>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === "withdrawals" && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-slate-800">Pending Student Payouts</h2>
+              <Badge className="bg-amber-100 text-amber-800 border-none px-3 py-1 text-xs">
+                {withdrawalRequests.length} Pending Approval
+              </Badge>
+            </div>
+
+            {withdrawalRequests.length === 0 ? (
+              <Card className="p-12 text-center border-none shadow-sm bg-white rounded-2xl flex flex-col items-center justify-center">
+                <div className="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center text-green-600 mb-4 animate-pulse">
+                  <CheckCircle className="w-8 h-8" />
+                </div>
+                <h3 className="text-lg font-bold text-slate-800 mb-1">All Clear!</h3>
+                <p className="text-slate-500 text-sm max-w-sm">
+                  There are no pending student withdrawal requests. All payouts have been successfully settled!
+                </p>
+              </Card>
+            ) : (
+              <div className="grid grid-cols-1 gap-4">
+                {withdrawalRequests.map((req) => (
+                  <Card key={req.id} className="overflow-hidden border border-slate-100 shadow-sm hover:shadow-md transition-shadow bg-white rounded-2xl">
+                    <div className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                      
+                      {/* Left: Student Info */}
+                      <div className="space-y-2 flex-1">
+                        <div className="flex items-center gap-3">
+                          <span className="text-lg font-extrabold text-slate-800">
+                            {req.first_name} {req.last_name}
+                          </span>
+                          <Badge className="bg-indigo-50 text-indigo-700 border-indigo-100 uppercase tracking-wider text-[9px] px-2 py-0.5">
+                            {req.method}
+                          </Badge>
+                        </div>
+                        <p className="text-xs text-slate-500">{req.email}</p>
+                        <div className="flex items-center gap-1.5 text-[11px] text-slate-400">
+                          <Clock className="w-3.5 h-3.5" />
+                          <span>Requested on {new Date(req.created_at).toLocaleString()}</span>
+                        </div>
+                      </div>
+
+                      {/* Middle: Details */}
+                      <div className="flex-[1.5] bg-slate-50 rounded-xl p-4 border border-slate-100/50">
+                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">
+                          Payout Credentials
+                        </span>
+                        
+                        {req.method === "UPI" && (
+                          <div className="space-y-1">
+                            <div className="flex items-center justify-between text-xs">
+                              <span className="text-slate-400">UPI ID / VPA:</span>
+                              <span className="font-mono font-bold text-slate-700 select-all">{req.details?.upi_id}</span>
+                            </div>
+                          </div>
+                        )}
+
+                        {req.method === "BANK" && (
+                          <div className="space-y-1 text-xs">
+                            <div className="flex items-center justify-between">
+                              <span className="text-slate-400">Bank Name:</span>
+                              <span className="font-semibold text-slate-700">{req.details?.bank_name}</span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <span className="text-slate-400">Holder Name:</span>
+                              <span className="font-semibold text-slate-700">{req.details?.account_holder}</span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <span className="text-slate-400">Account Number:</span>
+                              <span className="font-mono font-bold text-slate-700 select-all">{req.details?.account_number}</span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <span className="text-slate-400">IFSC Code:</span>
+                              <span className="font-mono font-bold text-slate-700 select-all uppercase">{req.details?.ifsc_code}</span>
+                            </div>
+                          </div>
+                        )}
+
+                        {req.method === "CARD" && (
+                          <div className="space-y-1 text-xs">
+                            <div className="flex items-center justify-between">
+                              <span className="text-slate-400">Cardholder Name:</span>
+                              <span className="font-semibold text-slate-700">{req.details?.card_holder}</span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <span className="text-slate-400">Card Number:</span>
+                              <span className="font-mono font-bold text-slate-700 select-all">{req.details?.card_number}</span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Right: Amount & Actions */}
+                      <div className="flex flex-row md:flex-col items-center md:items-end justify-between md:justify-center gap-4 min-w-[150px]">
+                        <div className="text-right">
+                          <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Amount</span>
+                          <span className="text-2xl font-black text-slate-900">₹{req.amount}</span>
+                        </div>
+                        <Button
+                          onClick={() => handleApprovePayout(req.id)}
+                          disabled={isProcessingPayout === req.id}
+                          className="bg-green-600 hover:bg-green-700 text-white font-bold text-xs uppercase tracking-wider px-4 py-2.5 rounded-xl shadow-lg shadow-green-100 flex items-center gap-1.5"
+                        >
+                          {isProcessingPayout === req.id ? (
+                            <>
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                              Processing...
+                            </>
+                          ) : (
+                            <>
+                              <CheckCircle className="w-3.5 h-3.5" />
+                              Approve Payout
+                            </>
+                          )}
+                        </Button>
+                      </div>
+
                     </div>
                   </Card>
                 ))}

@@ -30,6 +30,7 @@ import { useRef } from "react";
 import { useAuth } from "./AuthContext";
 import { toast } from "sonner";
 import { PaymentGatewayModal } from "./PaymentGatewayModal";
+import { WithdrawalModal } from "./WithdrawalModal";
 
 export function StudentDashboard() {
   const { user } = useAuth();
@@ -45,6 +46,7 @@ export function StudentDashboard() {
   const [editMode, setEditMode] = useState(false);
   const [formData, setFormData] = useState<any>({});
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
+  const [withdrawAmount, setWithdrawAmount] = useState(0);
   const [withdrawData, setWithdrawData] = useState({
     amount: "",
     account_number: "",
@@ -267,40 +269,15 @@ export function StudentDashboard() {
     setIsPaymentModalOpen(true);
   };
 
-  const handleWithdrawSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const amount = Number(withdrawData.amount);
-    if (!amount || isNaN(amount) || amount <= 0) {
-      toast.error("Please enter a valid amount");
+  const handleWithdrawClick = async () => {
+    const amount = prompt("Enter amount to withdraw:", "500");
+    if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) return;
+    if (Number(amount) > walletBalance) {
+      toast.error(`Insufficient balance. You only have ₹${walletBalance.toFixed(2)} available.`);
       return;
     }
-    
-    try {
-      const response = await fetch(import.meta.env.VITE_API_URL + "/wallet/withdraw", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          user_id: user?.user_id, 
-          amount: amount,
-          bank_details: {
-            account_number: withdrawData.account_number,
-            ifsc_code: withdrawData.ifsc_code,
-            holder_name: withdrawData.holder_name,
-          }
-        }),
-      });
-      if (response.ok) {
-        toast.success(`Withdrawal of ₹${amount} initiated! Funds will reach your bank within 24h.`);
-        setShowWithdrawModal(false);
-        setWithdrawData({ amount: "", account_number: "", ifsc_code: "", holder_name: "" });
-        fetchWalletData();
-      } else {
-        const error = await response.json();
-        toast.error(error.message || "Withdrawal failed");
-      }
-    } catch (err) {
-      toast.error("Withdrawal failed");
-    }
+    setWithdrawAmount(Number(amount));
+    setShowWithdrawModal(true);
   };
 
   const getStatusColor = (status: string) => {
@@ -679,7 +656,7 @@ export function StudentDashboard() {
                     <Button className="flex-1 bg-white text-indigo-600 hover:bg-slate-100 border-none" onClick={handleTopUp}>
                       Add Funds
                     </Button>
-                    <Button variant="outline" className="flex-1 border-white text-white bg-transparent hover:bg-white/10" onClick={() => setShowWithdrawModal(true)}>
+                    <Button variant="outline" className="flex-1 border-white text-white bg-transparent hover:bg-white/10" onClick={handleWithdrawClick}>
                       Withdraw
                     </Button>
                   </div>
@@ -965,70 +942,17 @@ export function StudentDashboard() {
           </div>
         )}
 
-        {/* Withdrawal Modal */}
         {showWithdrawModal && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <Card className="max-w-md w-full shadow-2xl border-none">
-              <CardHeader className="bg-slate-900 text-white rounded-t-xl">
-                <CardTitle>Withdraw to Bank Account</CardTitle>
-              </CardHeader>
-              <CardContent className="p-6">
-                <form onSubmit={handleWithdrawSubmit} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label>Amount to Withdraw (₹)</Label>
-                    <Input 
-                      type="number" 
-                      placeholder="e.g. 500" 
-                      value={withdrawData.amount}
-                      onChange={(e) => setWithdrawData({ ...withdrawData, amount: e.target.value })}
-                      required
-                    />
-                    <p className="text-[10px] text-slate-500">Available: ₹{walletBalance.toFixed(2)}</p>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 gap-4">
-                    <div className="space-y-2">
-                      <Label>Account Holder Name</Label>
-                      <Input 
-                        placeholder="Name as per bank records" 
-                        value={withdrawData.holder_name}
-                        onChange={(e) => setWithdrawData({ ...withdrawData, holder_name: e.target.value })}
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Account Number</Label>
-                      <Input 
-                        placeholder="Enter account number" 
-                        value={withdrawData.account_number}
-                        onChange={(e) => setWithdrawData({ ...withdrawData, account_number: e.target.value })}
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>IFSC Code</Label>
-                      <Input 
-                        placeholder="e.g. SBIN0001234" 
-                        className="uppercase"
-                        value={withdrawData.ifsc_code}
-                        onChange={(e) => setWithdrawData({ ...withdrawData, ifsc_code: e.target.value })}
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex gap-3 pt-4">
-                    <Button variant="ghost" type="button" className="flex-1" onClick={() => setShowWithdrawModal(false)}>
-                      Cancel
-                    </Button>
-                    <Button type="submit" className="flex-1 bg-green-600 hover:bg-green-700">
-                      Confirm Withdrawal
-                    </Button>
-                  </div>
-                </form>
-              </CardContent>
-            </Card>
-          </div>
+          <WithdrawalModal
+            isOpen={showWithdrawModal}
+            onClose={() => setShowWithdrawModal(false)}
+            amount={withdrawAmount}
+            userId={Number(user?.user_id)}
+            onSuccess={() => {
+              toast.success(`Withdrawal of ₹${withdrawAmount} requested! Processing starts immediately.`);
+              fetchWalletData();
+            }}
+          />
         )}
 
         {isPaymentModalOpen && (

@@ -94,6 +94,11 @@ export function CompanyDashboard() {
   const [walletBalance, setWalletBalance] = useState(0);
   const [transactions, setTransactions] = useState<any[]>([]);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [editingTask, setEditingTask] = useState<any>(null);
+  const [editPayment, setEditPayment] = useState("");
+  const [editTaskLink, setEditTaskLink] = useState("");
+  const [isUpdatingTask, setIsUpdatingTask] = useState(false);
+  const [isEditUploading, setIsEditUploading] = useState(false);
 
   const fetchDiscoverStudents = async () => {
     try {
@@ -163,6 +168,10 @@ export function CompanyDashboard() {
 
   const handlePostTask = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!newTask.task_link.trim()) {
+      toast.error("Task Resource Link Required", { description: "You must provide a Task Resource Link or upload a resource file before posting this task." });
+      return;
+    }
     setShowPaymentModal(true);
   };
 
@@ -206,6 +215,74 @@ export function CompanyDashboard() {
       toast.error("An error occurred. Please try again.");
     } finally {
       setIsPosting(false);
+    }
+  };
+
+  const handleOpenEditModal = (task: any) => {
+    setEditingTask(task);
+    setEditPayment(task.payment?.toString() || "");
+    setEditTaskLink(task.task_link || "");
+  };
+
+  const handleUpdateTask = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingTask) return;
+    if (!editTaskLink.trim()) {
+      toast.error("Task Resource Link Required", { description: "You must provide a Task Resource Link or upload a resource file." });
+      return;
+    }
+
+    setIsUpdatingTask(true);
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/tasks/${editingTask.task_id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          payment: parseFloat(editPayment),
+          task_link: editTaskLink,
+        }),
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        toast.success("Task updated successfully!");
+        setEditingTask(null);
+        fetchCompanyTasks();
+        fetchWalletData();
+      } else {
+        toast.error(data.message || "Failed to update task");
+      }
+    } catch (err) {
+      toast.error("An error occurred while updating the task.");
+    } finally {
+      setIsUpdatingTask(false);
+    }
+  };
+
+  const handleEditFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsEditUploading(true);
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const response = await fetch(import.meta.env.VITE_API_URL + "/upload", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await response.json();
+      if (response.ok) {
+        setEditTaskLink(data.url);
+        toast.success("File uploaded successfully!");
+      } else {
+        toast.error(data.message || "Upload failed");
+      }
+    } catch (err) {
+      toast.error("Error uploading file");
+    } finally {
+      setIsEditUploading(false);
     }
   };
 
@@ -584,7 +661,7 @@ export function CompanyDashboard() {
                   </div>
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="task_link">Task Resource Link (Optional)</Label>
+                      <Label htmlFor="task_link">Task Resource Link (Required)</Label>
                       <Input 
                         id="task_link" 
                         placeholder="e.g. https://github.com/docs" 
@@ -752,6 +829,9 @@ export function CompanyDashboard() {
                             </div>
                           </div>
                           <div className="flex gap-2">
+                            <Button variant="outline" size="sm" onClick={() => handleOpenEditModal(task)}>
+                              Edit Task
+                            </Button>
                             <Button variant="outline" size="sm" asChild>
                                 <Link to={`/task/${task.task_id}`}>View</Link>
                             </Button>
@@ -1012,6 +1092,74 @@ export function CompanyDashboard() {
               fetchWalletData();
             }}
           />
+        )}
+
+        {/* Edit Task Modal */}
+        {editingTask && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <Card className="max-w-md w-full bg-white dark:bg-slate-900">
+              <CardHeader>
+                <CardTitle className="text-xl font-bold">Edit Task Details</CardTitle>
+                <CardDescription>Update the payment amount or task resource link.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleUpdateTask} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="editPayment">Task Payment (₹)</Label>
+                    <Input
+                      id="editPayment"
+                      type="number"
+                      min="1"
+                      value={editPayment}
+                      onChange={(e) => setEditPayment(e.target.value)}
+                      required
+                    />
+                    <p className="text-xs text-slate-500">
+                      Note: Increasing payment will deduct the difference (incl. 5% fee & 18% GST) from your wallet. Decreasing payment will refund the difference to your wallet.
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="editTaskLink">Task Resource Link (Required)</Label>
+                    <Input
+                      id="editTaskLink"
+                      placeholder="e.g. https://github.com/docs"
+                      value={editTaskLink}
+                      onChange={(e) => setEditTaskLink(e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="edit_task_file">OR Upload New Resource File</Label>
+                    <div className="flex gap-2 items-center">
+                      <Input
+                        id="edit_task_file"
+                        type="file"
+                        onChange={handleEditFileUpload}
+                        disabled={isEditUploading}
+                      />
+                      {isEditUploading && <Loader2 className="w-5 h-5 animate-spin text-blue-600 flex-shrink-0" />}
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3 pt-4 justify-end">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setEditingTask(null)}
+                      disabled={isUpdatingTask}
+                    >
+                      Cancel
+                    </Button>
+                    <Button type="submit" disabled={isUpdatingTask || isEditUploading}>
+                      {isUpdatingTask ? "Updating..." : "Save Changes"}
+                    </Button>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
+          </div>
         )}
       </div>
     </div>

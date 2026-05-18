@@ -216,7 +216,7 @@ export function Root() {
                 </div>
                 <p className="text-sm mb-4">
                   Connecting students with flexible micro-internship opportunities.
-                  Fair, transparent, and secure task distribution with 5% commission.
+                  Fair, transparent, and secure task distribution.
                 </p>
               </div>
             </div>

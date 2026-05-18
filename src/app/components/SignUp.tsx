@@ -623,7 +623,7 @@ export function SignUp() {
 
         <p className="text-center text-xs text-slate-500 dark:text-slate-400 mt-6">
           By creating an account, you acknowledge that MicroIntern is a marketplace
-          platform and agree to our 5% commission model on all transactions.
+          platform and agree to our terms of service.
         </p>
       </div>
     </div>
